@@ -48,7 +48,7 @@ function getCsvData($file){
 
 $adatok = getCsvData($file);
 
-function insertAdatok($mysqli, $adatok, $truncate = false){
+function insertData($mysqli, $adatok, $truncate = false){
     if($truncate) {
         $mysqli->query("TRUNCATE TABLE adatok");
     }
@@ -56,12 +56,11 @@ function insertAdatok($mysqli, $adatok, $truncate = false){
         $a1 = $adatok[$i][0];
         $a2 = $adatok[$i][1];
         $a3 = $adatok[$i][2];
-        $mysqli->query("INSERT INTO adatok (id ,megye, zip_kod, varos) VALUES ('$i', '$a1', '$a2', '$a3')");
+        $mysqli->query("INSERT INTO adatok (id ,county, zip_code, city) VALUES ('$i', '$a1', '$a2', '$a3')");
     }
 }
 
-insertAdatok($mysqli,$adatok,true);
-
+insertData($mysqli,$adatok,true);
 
 
 
