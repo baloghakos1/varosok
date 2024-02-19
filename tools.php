@@ -3,14 +3,23 @@
 class Tools
 {
 
-    public $megyeszekhelyek = ["Kecskemét","Pécs","Békéscsaba","Miskolc","Szeged","Székesfehérvár","Győr","Debrecen","Eger","Szolnok","Tatabánya","Salgótarján","Budapest","Kaposvár","Nyíregyháza","Szekszárd","Szombathely","Veszprém","Zalaegerszeg"];
-    public $megye_lakossag = [503825,360704,334264,642447,399012,417712,467144,527989,294609,370007,299207,189304,1278874,301429,552964,217463,253551,341317,268648];
+    
 
-    static function updateVarosok($data) {
-        
+    static function update($mysqli, $zip, $a,$b,$c)
+    {
+        $query = "UPDATE adatok SET city='$c', zip_code='$b', county='$a' WHERE zip_code = $zip;";
+        $mysqli->query($query);
     }
-    static function deleteVarosok($data) {
+    static function delete($mysqli, $zip)
+    {
+        $query = "DELETE FROM adatok WHERE zip_code = $zip";
 
+        $mysqli->query($query);
+    }
+    static function addData($mysqli, $a, $b, $c) {
+        $query = "INSERT INTO adatok (id ,county, zip_code, city) VALUES ('', '$a', '$b', '$c')";
+
+        $mysqli->query($query);
     }
     static function insertVarosok($mysqli, $adatok, $truncate = false){
         if($truncate) {
@@ -39,8 +48,8 @@ class Tools
         return $array;
     }
 
-    static function showVarosok() {
-        $adatok = tools::getCsvData("zip_codes.csv");
+
+    static function showVarosok($adatok) {
         echo "
         <style>
         table, th, td {
@@ -57,17 +66,17 @@ class Tools
         </tr>
         ";
         for ($i = 0; $i < count($adatok); $i++) { 
-            $a1 = $adatok[$i][0];
-            $a2 = $adatok[$i][1];
-            $a3 = $adatok[$i][2];
+            $a1 = $adatok[$i]['county'];
+            $a2 = $adatok[$i]['zip_code'];
+            $a3 = $adatok[$i]['city'];
             echo "
             <tr>
                 <td>$a1</td>
                 <td>$a2</td>
                 <td>$a3</td>
                 <td>";
-                    tools::showChangeButton();
-                    tools::showDeleteButton();
+                    tools::showChangeButton($a2);
+                    tools::showDeleteButton($a2);
                 echo"</td>
             </tr>
             ";
@@ -75,19 +84,23 @@ class Tools
         echo "</table>";
     }
 
-    static function showChangeButton() {
+    static function showChangeButton($a) {
         echo '
-            <button id="btn-change" name="btn-change" title="change">
+            <form method="post" action="valtoztat.php?zip=' . $a . '">
+            <button id="btn-change" name="btn-change" title="change" value="'.$a.'">
             Change data
             </button>
+            </form>
         ';
     }
 
-    static function showDeleteButton() {
+    static function showDeleteButton($a) {
         echo '
-            <button id="btn-delete" name="btn-delete" title="delete">
+        <form method="post" action="">
+            <button id="btn-delete" name="btn-delete" title="delete" value="'.$a.'">
             Delete data
             </button>
+        </form>
         ';
     }
 
@@ -105,17 +118,21 @@ class Tools
 
     static function showCountiesDropdown(array $counties) 
     {
-        $result = '<select id="counties-dropdown" name="counties-dropdown">';
+        $result = '<form method="post">
+            <select id="counties-dropdown" name="counties-dropdown">
+            <option value = "" selected></option>';
         foreach ($counties as $county) {
             if  ($county == "") {
-                $result .= '<option value ';
+                
             }
             else {
-                $result .= ('<option value = ' . $county . '"selected>' . $county . '</option>');
+                $result .= ('<option value = ' . $county . '>' . $county . '</option>');
             }
             
         }
-        $result .= '</select>';
+        $result .= '</select>
+                    <button type="submit" name="submit">Submit</button>
+                    </form>';
         echo $result;
     }
 
@@ -155,7 +172,101 @@ class Tools
         echo "</table>";
     }
 
+    static function GetByCounty($mysqli, string $name)
+    {
+        $query = "SELECT city FROM adatok WHERE county = '$name'";
+        return $mysqli->query($query)->fetch_all();
+    }
 
+    static function showCity($asd) {
+        echo "
+        <style>
+        table, th, td {
+        border:1px solid black;
+        border-collapse: collapse;
+        }
+        </style>
+        <table>
+        <tr>
+          <th>City</th>
+        </tr>
+        ";
+        for ($i = 0; $i < count($asd); $i++) { 
+            $a1 = $asd[$i][0];
+            echo "
+            <tr>
+                <td>$a1</td>
+            </tr>
+            ";
+        }
+        echo "</table>";
+    }
+
+    static function Search($mysqli, string $name)
+    {
+        $query = "SELECT * FROM adatok WHERE zip_code = '$name'";
+
+        return $mysqli->query($query)->fetch_all();
+    }
+
+    static function Search2($mysqli, string $name)
+    {
+        $query = "SELECT * FROM adatok WHERE city = '$name'";
+
+        return $mysqli->query($query)->fetch_all();
+    }
+
+    static function showSearch($search) {
+        echo "
+        <style>
+        table, th, td {
+        border:1px solid black;
+        border-collapse: collapse;
+        }
+        </style>
+        <table>
+        <tr>
+          <th>County</th>
+          <th>Zip_code</th>
+          <th>City</th>
+          <th>Buttons</th>
+        </tr>
+        ";
+        for ($i = 0; $i < count($search); $i++) { 
+            $a1 = $search[$i][1];
+            $a2 = $search[$i][2];
+            $a3 = $search[$i][3];
+            echo "
+            <tr>
+                <td>$a1</td>
+                <td>$a2</td>
+                <td>$a3</td>
+                <td>";
+                    tools::showChangeButton($a2);
+                    tools::showDeleteButton($a2);
+                echo"</td>
+            </tr>
+            ";
+        }
+        echo "</table>";
+    }
+
+    static function getAll($mysqli): array
+    {
+        $query = "SELECT * FROM adatok ORDER BY county, city";
+
+        return $mysqli->query($query)->fetch_all(MYSQLI_ASSOC);
+    }
+
+    static function showExportBtn()
+    {
+        echo '
+            <form method="post" action="export.php">
+                <button id="btn-export" name="btn-export" title="Export to .CSV">
+                    <i class="fa fa-file-excel"></i>&nbsp;Export CSV</button>
+            </form>';
+    }
+    
 
 }
 
