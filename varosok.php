@@ -13,7 +13,8 @@
     <form action="" method="post">
         <label for="inputField">Keresés:</label><br>
         <input type="text" id="inputField" name="inputField"><br>
-        <button type="submit" name="submitButton">Click me</button>
+        <button type="submit" name="submitButton">Search</button>
+        <button type="submit" name="reset">Reset database</button>
     </form>
     <br>
     <a href="hozzaad.php"><button>Add data</button></a>
@@ -27,14 +28,17 @@
         $mysqli = new mysqli($servername, $username, $password, $database);
         require_once 'tools.php';
         $file = "zip_codes.csv";
+        if (isset($_POST['reset']))  {
+            $data = tools::getCsvData($file);
+            tools::insertVarosok($mysqli, $data, true);
+        }
         if (isset($_POST['submitButton'])) {
             $inputValue = $_POST['inputField'];
             $search = tools::Search($mysqli, $inputValue);
             if ($search == null) {
                 $search = tools::Search2($mysqli, $inputValue);
                 if($search == null) {
-                    $data = tools::getCsvData($file);
-                    //tools::insertVarosok($mysqli, $data, false);
+                    echo "Nincs ilyen város/zip kód!";
                     tools::showVarosok(tools::getAll($mysqli));
                 }
                 else {
@@ -48,6 +52,7 @@
         if(isset($_POST['btn-delete'])) {
             $zip = $_POST['btn-delete'];
             tools::delete($mysqli, $zip);
+            tools::showVarosok(tools::getAll($mysqli));
         }
         
     ?>

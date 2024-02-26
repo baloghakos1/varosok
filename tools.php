@@ -136,6 +136,25 @@ class Tools
         echo $result;
     }
 
+    static function showCountiesDropdown2(array $counties) 
+    {
+        $result = '<form method="post">
+            <select id="counties-dropdown" name="counties-dropdown">
+            <option value = "" selected></option>';
+        foreach ($counties as $county) {
+            if  ($county == "") {
+                
+            }
+            else {
+                $result .= ('<option value = ' . $county . '>' . $county . '</option>');
+            }
+            
+        }
+        $result .= "</form>
+                    <br>";
+        echo $result;
+    }
+
     static function showCounties($megyesz, $megyel) {
         $counties = tools::getCounties();
         echo '
